@@ -1,0 +1,85 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Architecture" id="arch1">
+    <mxGraphModel dx="2054" dy="1150" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="fe" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;b&gt;Frontend (Next.js)&lt;/b&gt;&lt;br&gt;Upload clip&lt;br&gt;Progress polling&lt;br&gt;Clip review / download" vertex="1">
+          <mxGeometry height="110" width="220" x="40" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="api" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="&lt;b&gt;API (FastAPI)&lt;/b&gt;&lt;br&gt;POST /jobs&lt;br&gt;GET /jobs/{id}&lt;br&gt;GET /jobs/{id}/clips" vertex="1">
+          <mxGeometry height="110" width="220" x="340" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="db" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=12;fillColor=#fff2cc;strokeColor=#d6b656;" value="&lt;b&gt;SQLite&lt;/b&gt;&lt;br&gt;jobs table&lt;br&gt;(id, status, stage, paths)" vertex="1">
+          <mxGeometry height="130" width="160" x="640" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="disk" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="&lt;b&gt;Local disk&lt;/b&gt;&lt;br&gt;uploads/{job_id}/source.mp4&lt;br&gt;work/{job_id}/: audio.wav, transcript.json, segments.json, scores.json, clips/*.mp4, result.json" vertex="1">
+          <mxGeometry height="80" width="560" x="40" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="worker" parent="1" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;startSize=30;fontStyle=0;" value="&lt;b&gt;Worker process&lt;/b&gt; (polls jobs table, runs pipeline; each stage caches its output to disk and is skipped if it already exists)" vertex="1">
+          <mxGeometry height="150" width="970" x="40" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="s1" parent="worker" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;" value="1. Audio extraction&lt;br&gt;(ffmpeg)" vertex="1">
+          <mxGeometry height="80" width="135" x="20" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="s2" parent="worker" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;" value="2. Transcription&lt;br&gt;(faster-whisper, word timestamps)" vertex="1">
+          <mxGeometry height="80" width="135" x="175" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="s3" parent="worker" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;" value="3. Segmentation&lt;br&gt;(sentences / chunks)" vertex="1">
+          <mxGeometry height="80" width="135" x="330" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="s4" parent="worker" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;" value="4. Moment scoring&lt;br&gt;(LLM baseline)" vertex="1">
+          <mxGeometry height="80" width="135" x="485" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="s5" parent="worker" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;" value="5. Clip selection&lt;br&gt;(snap to sentence edges, length limits, no overlaps)" vertex="1">
+          <mxGeometry height="80" width="135" x="640" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="s6" parent="worker" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#666666;" value="6. Cut clips&lt;br&gt;(ffmpeg) + write result.json" vertex="1">
+          <mxGeometry height="80" width="135" x="795" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="p1" edge="1" parent="worker" source="s1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=block;html=1;" target="s2" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p2" edge="1" parent="worker" source="s2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=block;html=1;" target="s3" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p3" edge="1" parent="worker" source="s3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=block;html=1;" target="s4" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p4" edge="1" parent="worker" source="s4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=block;html=1;" target="s5" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p5" edge="1" parent="worker" source="s5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=block;html=1;" target="s6" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="llm" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="&lt;b&gt;LLM API&lt;/b&gt;&lt;br&gt;(external)" vertex="1">
+          <mxGeometry height="70" width="180" x="540" y="540" as="geometry" />
+        </mxCell>
+        <mxCell id="later" parent="1" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=none;strokeColor=#999999;fontColor=#666666;" value="&lt;b&gt;Later (not MVP)&lt;/b&gt;&lt;br&gt;Captions burn-in&lt;br&gt;Reframing 9:16&lt;br&gt;Accounts / auth&lt;br&gt;Billing (Stripe)&lt;br&gt;S3 + job queue (Celery/Redis)" vertex="1">
+          <mxGeometry height="170" width="250" x="760" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="fe" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=block;html=1;exitX=1;exitY=0.3;exitDx=0;exitDy=0;entryX=0;entryY=0.3;entryDx=0;entryDy=0;" target="api" value="upload clip / create job">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="api" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=block;html=1;exitX=0;exitY=0.75;exitDx=0;exitDy=0;entryX=1;entryY=0.75;entryDx=0;entryDy=0;" target="fe" value="status + clips (polling)">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="api" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=block;startArrow=block;html=1;" target="db" value="create / read job">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="api" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=block;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.73;entryY=0;entryDx=0;entryDy=0;" target="disk" value="save upload">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="worker" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=block;startArrow=block;html=1;exitX=0.7;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" target="db" value="poll queued jobs / update status">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="worker" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=block;startArrow=block;html=1;exitX=0.27;exitY=0;exitDx=0;exitDy=0;entryX=0.46;entryY=1;entryDx=0;entryDy=0;" target="disk" value="read / write stage outputs">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="s4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;endArrow=block;startArrow=block;html=1;" target="llm" value="score segments">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
