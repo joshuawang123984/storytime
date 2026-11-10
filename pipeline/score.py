@@ -1,6 +1,4 @@
-# pipeline/score.py
 import json
-import os
 from pathlib import Path
 
 import anthropic
