@@ -4,6 +4,10 @@ from pathlib import Path
 import anthropic
 
 MODEL = "claude-haiku-5-5"   # try other models like "claude-sonnet-5-5" for better judgment
+'''
+    Also consider using llama-cpp-python. Free per run and private unlike anthropic
+    Drawbacks: Slow on laptop, weaker judgement
+'''
 BATCH = 40
 OVERLAP = 5
 
