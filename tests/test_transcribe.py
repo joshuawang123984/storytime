@@ -3,7 +3,6 @@ from types import SimpleNamespace
 
 import pipeline.transcribe as transcribe_mod
 
-
 def make_fake_model(segments, calls):
 
     class FakeModel:
@@ -40,7 +39,6 @@ def test_transcribe_writes_word_timestamps(tmp_path, monkeypatch):
     ]
     assert calls["transcribe_kwargs"]["word_timestamps"] is True
 
-
 def test_transcribe_is_cached(tmp_path, monkeypatch):
     calls = {"init": 0}
     segments = [SimpleNamespace(words=[word(0.0, 0.5, " hi")])]
@@ -53,7 +51,6 @@ def test_transcribe_is_cached(tmp_path, monkeypatch):
     transcribe_mod.transcribe(audio, tmp_path)
 
     assert calls["init"] == 1 
-
 
 def test_transcribe_handles_no_speech(tmp_path, monkeypatch):
     calls = {"init": 0}
